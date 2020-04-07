@@ -27,18 +27,18 @@ d3.csv(csv_file).then(function(data) {
 
     // parse data as integer
     data.forEach(function(item) {
-        item.age = +item.age;
-        item.smokes = +item.smokes;
+      item.poverty = +item.poverty;
+      item.healthcare = +item.healthcare;
     });
 
     // scale functions
     var xLinearScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.age))
-        .range([0, width]);
+      .domain([8, d3.max(data, d => d.poverty)])
+      .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.smokes))
-        .range([height, 0]);
+      .domain([3, d3.max(data, d => d.healthcare)])
+      .range([height, 0]);
 
     // create axis functions
     var bottomAxis = d3.axisBottom(xLinearScale);
@@ -46,21 +46,37 @@ d3.csv(csv_file).then(function(data) {
 
     // add axes to chart
     chartGroup.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(bottomAxis);
+      .attr("transform", `translate(0, ${height})`)
+      .call(bottomAxis);
 
     chartGroup.append("g")
-        .call(leftAxis);
+      .call(leftAxis);
+
+    // text inside circles
+    chartGroup.selectAll("text")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("x", d => xLinearScale(d.poverty) - 12)
+      .attr("y", d => yLinearScale(d.healthcare) + 8)
+      .text(function(d) {
+        var text = d.abbr;
+        console.log(text);
+        return text
+      });
 
     // circles!!!
-    var circlesGroup = chartGroup.selectAll("circle")
-        .data(data)
-        .enter()
-        .append("circle")
-        .attr("cx", d => xLinearScale(d.age))
-        .attr("cy", d => yLinearScale(d.smokes))
-        .attr("r", "15")
-        .attr("fill", "#2BA0C0")
-        .attr("opacity", ".5");
+    chartGroup.selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("cx", d => xLinearScale(d.poverty))
+      .attr("cy", d => yLinearScale(d.healthcare))
+      .attr("r", "15")
+      .attr("fill", "#2BA0C0")
+      .attr("opacity", ".5");
+
+    
+
 
 }).catch(error => console.log(error));
