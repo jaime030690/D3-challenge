@@ -52,31 +52,58 @@ d3.csv(csv_file).then(function(data) {
     chartGroup.append("g")
       .call(leftAxis);
 
-    // text inside circles
-    chartGroup.selectAll("text")
-      .data(data)
-      .enter()
-      .append("text")
-      .attr("x", d => xLinearScale(d.poverty) - 12)
-      .attr("y", d => yLinearScale(d.healthcare) + 8)
-      .text(function(d) {
-        var text = d.abbr;
-        console.log(text);
-        return text
-      });
-
     // circles!!!
-    chartGroup.selectAll("circle")
+    var circlesGroup = chartGroup.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
+      .attr("class", "stateCircle")
       .attr("cx", d => xLinearScale(d.poverty))
       .attr("cy", d => yLinearScale(d.healthcare))
-      .attr("r", "15")
-      .attr("fill", "#2BA0C0")
-      .attr("opacity", ".5");
-
+      .attr("r", "15");
     
+    // text inside circles
+    var textGroup = chartGroup.selectAll("text")
+      .data(data)
+      .enter()
+      .append("text")
+      .text(d => d.abbr)
+      .attr("class", "stateText")
+      .attr("x", d => xLinearScale(d.poverty))
+      .attr("y", d => yLinearScale(d.healthcare) + 5);
+    
+    // tool tips
+    var toolTip = d3.tip()
+      .attr("class", "d3-tip")
+      .offset([80, -60])
+      .html(function(d) {
+        return (`${d.state}<br>Poverty: ${d.poverty}%<br>Lack Healthcare: ${d.healthcare}%`)
+      });
+
+    // add toop tips to chart
+    chartGroup.call(toolTip);
+
+    // event listener
+    circlesGroup.on("mouseover", function(data) {
+      toolTip.show(data, this);
+      })
+      .on("mouseout", function(data, index) {
+        toolTip.hide(data);
+      });
+
+    // create labels
+    chartGroup.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left + 40)
+      .attr("x", 0 - (height / 2))
+      .attr("dy", "1em")
+      .attr("class", "aText")
+      .text("Lacks Healthcare (%)");
+
+    chartGroup.append("text")
+      .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+      .attr("class", "aText")
+      .text("In Poverty (%)");
 
 
 }).catch(error => console.log(error));
